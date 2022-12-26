@@ -7,14 +7,14 @@ Author : niranjan.awati@ntucenterprise.sg
 */
 import (
 	"encoding/json"
+	"fmt"
+	"io/ioutil"
 	"os"
 
 	"bitbucket.org/niranjanawati/cart-mydesign/cache"
 	"bitbucket.org/niranjanawati/cart-mydesign/cart"
-	"bitbucket.org/niranjanawati/cart-mydesign/catalogue"
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis"
-	"github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -40,6 +40,32 @@ func init() {
 	/* We can think of setting the values here for all the environment variables*/
 }
 
+// seed_cache : for the prototype we are seeding the cart data on redis
+func seed_cache(client *redis.Client) {
+	// this is an indicator to load the test data
+	cart := cart.ScanGo{}
+	// getting data  from seed json
+	jsonF, err := os.Open("./seed/carts.json")
+	if err != nil {
+		log.Errorf("Failed to open seed file, %s", err)
+	}
+	byt, err := ioutil.ReadAll(jsonF)
+	if err != nil {
+		log.Errorf("Failed read json seed file, %s", err)
+	}
+	if err := json.Unmarshal(byt, &cart); err != nil {
+		log.Errorf("failed to unmarshal test json data, %s", err)
+	}
+	jsonStr, err := json.Marshal(cart.Items)
+	if err != nil {
+		log.Errorf("failed to get json string for the items, %s", err)
+	}
+	result := client.Set(fmt.Sprintf("cart-%s", cart.UserID), jsonStr, 0)
+	if result.Err() != nil {
+		log.Errorf("failed to set cart value cache, %s", result.Err())
+	}
+}
+
 /* A demo webapi to show how the cart can be designed differently
  */
 func main() {
@@ -60,29 +86,7 @@ func main() {
 	}
 	log.Info("Connected to redis server")
 	if TEST_DATA {
-		// this is an indicator to load the test data
-		id := uuid.New()
-		data := cart.ScanGo{
-			UserID: id.String(),
-			Items: []catalogue.Product{
-				&catalogue.Grocery{Title: "Tomatoes", Vendor: "Parson&Sons", Unit: catalogue.Piece, PerUnit: 0.5},
-				&catalogue.Grocery{Title: "Ginger Garlic paste", Vendor: "Chings", Unit: catalogue.Bottle, PerUnit: 0.5},
-			},
-		}
-		byt, _ := json.Marshal(data)
-		/* For now we are just setting the cart identification as cart-userid
-		We are aware ofcourse in the actual scene this may not be the case
-		*/
-		// if err := client.Set(fmt.Sprintf("cart-test", id.String()), byt, 0); err != nil {
-		// 	log.WithFields(log.Fields{
-		// 		"id": id.String(),
-		// 	}).Error("failed to set cache test data: %s", err)
-		// }
-		if status := client.Set("cart-test", byt, 0); status.Err() != nil {
-			log.WithFields(log.Fields{
-				"id": id.String(),
-			}).Error("failed to set cache test data: %s", err)
-		}
+		seed_cache(client)
 	}
 	/*++++++++++++++++
 	Starting api server
