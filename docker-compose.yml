@@ -1,0 +1,30 @@
+version: '3.1'
+# This will start the requisite services to demo the application 
+# for now atleast we have not gotten the environment file
+services:
+  redis:
+    image: 'bitnami/redis:latest'
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+    ports:
+      - "6379:6379"
+    volumes:
+      # for the sake of the demo, the local directory has been made public.
+      # Ideally the group permissions shoudl have been applied. 
+      - "/home/niru/data/bitnami:/bitnami/redis/data"
+    container_name: mycart_cache
+  apiapp:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - APPNAME=mycart
+        - ORGNAME=ntucfairprice
+    ports: 
+      - 80:8080
+    links:
+      - "redis"
+    tty: true
+    stdin_open: true
+    entrypoint: [/usr/bin/ntucfairprice/mycart]
+    container_name: mycart_httpapi
