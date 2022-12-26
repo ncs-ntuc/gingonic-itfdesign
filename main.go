@@ -61,7 +61,9 @@ func seed_cache(client *redis.Client) {
 	if err := json.Unmarshal(byt, &cart); err != nil {
 		log.Errorf("failed to unmarshal test json data, %s", err)
 	}
-	jsonStr, err := json.Marshal(cart.Items)
+	// Notice how we cache the entire cart as the value in redis
+	// convenient since writing and reading th cache then is that much more faster
+	jsonStr, err := json.Marshal(cart)
 	if err != nil {
 		log.Errorf("failed to get json string for the items, %s", err)
 	}
@@ -121,7 +123,7 @@ func main() {
 	}) // this can help you check if the server is up and running
 	api := r.Group("/api")
 	// A user has a single cart that can be appended, cleared and posted on checkout
-	api.GET("/users/:userid/cart", CachedCart(&cache.RedisCache{}), HndlUsrCart)
+	api.GET("/users/:userid/cart", CachedCart(&cache.RedisCache{Client: client}), HndlUsrCart)
 	api.PATCH("/users/:userid/cart", HndlUsrCart)
 	api.DELETE("/users/:userid/cart", HndlUsrCart)
 	api.POST("/users/:userid/cart", HndlUsrCart)

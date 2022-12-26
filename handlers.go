@@ -24,14 +24,13 @@ func CachedCart(cache cache.ICache) gin.HandlerFunc {
 			return
 		}
 		// +++++++++ reading from cache
-		byt, err := cache.ReadCart(c.Param("userid"))
-		if err != nil {
-			c.AbortWithStatus(http.StatusBadRequest)
-			return
-		}
-		// ++++++++++++ unmarshalling the cart
-		crt := cart.InitCart(cart.CartType(crtType))
-		json.Unmarshal(byt, crt) // TODO: handle unmarshalling error later
+		crt, err := cache.ReadCart(c.Param("userid"), func(byt []byte) cart.ICart {
+			crt := cart.InitCart(cart.CartType(crtType))
+			if json.Unmarshal(byt, crt) != nil {
+				return nil
+			} // TODO: handle unmarshalling error later
+			return crt
+		})
 		if err != nil {
 			c.AbortWithStatus(http.StatusBadRequest)
 			return
