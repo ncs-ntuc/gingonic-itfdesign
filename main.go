@@ -41,10 +41,15 @@ func init() {
 }
 
 // seed_cache : for the prototype we are seeding the cart data on redis
+// for seeding json data from file refer to ./seed/carts.json
 func seed_cache(client *redis.Client) {
 	// this is an indicator to load the test data
 	cart := cart.ScanGo{}
 	// getting data  from seed json
+	// https://tutorialedge.net/golang/parsing-json-with-golang/
+	/* ++++++++++++++++
+	Reading seeding file
+	++++++++++++++++*/
 	jsonF, err := os.Open("./seed/carts.json")
 	if err != nil {
 		log.Errorf("Failed to open seed file, %s", err)
@@ -60,9 +65,20 @@ func seed_cache(client *redis.Client) {
 	if err != nil {
 		log.Errorf("failed to get json string for the items, %s", err)
 	}
-	result := client.Set(fmt.Sprintf("cart-%s", cart.UserID), jsonStr, 0)
-	if result.Err() != nil {
-		log.Errorf("failed to set cart value cache, %s", result.Err())
+	/* ++++++++++++++++
+	Pushing to cache
+	++++++++++++++++*/
+	// https://tutorialedge.net/golang/go-redis-tutorial/
+	key := fmt.Sprintf("cart-%s", cart.UserID)
+	status := client.Exists(key)
+	if count, _ := status.Result(); count == 0 {
+		// seed the cache only if the cart seed does not exists
+		result := client.Set(key, jsonStr, 0)
+		if result.Err() != nil {
+			log.Errorf("failed to set cart value cache, %s", result.Err())
+		}
+	} else {
+		log.Info("Cache is already seeded .. skipping")
 	}
 }
 
@@ -86,6 +102,7 @@ func main() {
 	}
 	log.Info("Connected to redis server")
 	if TEST_DATA {
+		// If that cart is already pushed to cart no need to push again
 		seed_cache(client)
 	}
 	/*++++++++++++++++
