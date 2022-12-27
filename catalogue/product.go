@@ -13,7 +13,7 @@ const (
 
 // Product : any item that can be added to the cart
 type Product interface {
-	Price() float32
+	TotalPrice() float32
 	DnmUnit() Denomination
 	DeliveryCharge() float32
 	ServiceCharge() float32
@@ -28,8 +28,8 @@ type Grocery struct {
 	Discount float32      `json:"discount"`
 }
 
-func (grc *Grocery) Price() float32 {
-	return grc.PerUnit * grc.Discount
+func (grc *Grocery) TotalPrice() float32 {
+	return grc.PerUnit * (grc.Discount / 100)
 }
 func (grc *Grocery) DnmUnit() Denomination {
 	return grc.Unit

@@ -7,6 +7,7 @@ import (
 
 	"bitbucket.org/niranjanawati/cart-mydesign/cache"
 	"bitbucket.org/niranjanawati/cart-mydesign/cart"
+	"bitbucket.org/niranjanawati/cart-mydesign/errx"
 	"github.com/gin-gonic/gin"
 )
 
@@ -32,7 +33,9 @@ func CachedCart(cache cache.ICache) gin.HandlerFunc {
 			return crt
 		})
 		if err != nil {
-			c.AbortWithStatus(http.StatusBadRequest)
+			// c.AbortWithStatus(http.StatusBadRequest)
+			// return
+			errx.DigestErr(c, err)
 			return
 		}
 		// Calculate the discount and service charges here

@@ -1,6 +1,8 @@
 package cart
 
-import "bitbucket.org/niranjanawati/cart-mydesign/catalogue"
+import (
+	"bitbucket.org/niranjanawati/cart-mydesign/catalogue"
+)
 
 type CartType int
 
@@ -39,7 +41,7 @@ func InitCart(ct CartType) ICart {
 func ApplyDiscounts(crt ICart) error {
 	var value float32 = 0.0
 	for _, item := range crt.(ICartItems).Picked() {
-		value += item.Price()
+		value += item.TotalPrice()
 	}
 	crt.AddValue(value)
 	return nil
