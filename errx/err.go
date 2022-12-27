@@ -1,5 +1,9 @@
 package errx
 
+/* Error design objects and functions to seamless integrate with loggging
+Author 	: niranjan.awati@ntucenterprise.sg
+Date 	: 27-DEC-2022
+*/
 import (
 	"fmt"
 	"net/http"
@@ -33,6 +37,8 @@ func (crterr *CartErr) UMsg() string {
 func (crterr *CartErr) Typ() ErrType {
 	return crterr.Ty
 }
+
+// Throw : factory method to create a new custom error
 func Throw(ty ErrType, internal error, trace, diag, umsg string) *CartErr {
 	return &CartErr{
 		Ty:          ty,

@@ -1,5 +1,10 @@
 package main
 
+/* All the gin handler function implementations go here.
+the handlers that are customizable in compile time are delegates that return handlers
+Author 	: niranjan.awati@ntucenterprise.sg
+Date 	: 27-DEC-2022
+*/
 import (
 	"encoding/json"
 	"net/http"
@@ -14,6 +19,7 @@ import (
 // CachedCart : middleware to get cart object unmarshalled from cache
 // will connect to Redis and get the value of the cart for the user Id
 // will inject the cart object into context for downstream middleware functions
+// Will Apply surcharges and also discounts on cart
 // cache		: since we want the middleware to be agnostic of the underlying cart,we get an interface to cache
 func CachedCart(cache cache.ICache) gin.HandlerFunc {
 	return func(c *gin.Context) {

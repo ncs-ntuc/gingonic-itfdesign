@@ -3,7 +3,8 @@ package main
 /* Small prototype of the cart project to demo a new design pattern
 While DDD is ok, if u-services is the proposed architecture why not use KISS and Interface based design
 If go has packages, they are designed for a  purpose. Imposing DDD style project structure is actually making it un-usable across projects
-Author : niranjan.awati@ntucenterprise.sg
+Author 	: niranjan.awati@ntucenterprise.sg
+Date 	: 27-DEC-2022
 */
 import (
 	"encoding/json"
