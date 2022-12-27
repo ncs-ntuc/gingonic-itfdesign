@@ -28,11 +28,20 @@ func CachedCart(cache cache.ICache) gin.HandlerFunc {
 			crt := cart.InitCart(cart.CartType(crtType))
 			if json.Unmarshal(byt, crt) != nil {
 				return nil
-			} // TODO: handle unmarshalling error later
+			}
 			return crt
 		})
 		if err != nil {
 			c.AbortWithStatus(http.StatusBadRequest)
+			return
+		}
+		// Calculate the discount and service charges here
+		if err := cart.ApplyDiscounts(crt); err != nil {
+			c.AbortWithStatus(http.StatusInternalServerError)
+			return
+		}
+		if err := cart.ApplyCharges(crt); err != nil {
+			c.AbortWithStatus(http.StatusInternalServerError)
 			return
 		}
 		c.Set("cachedcart", crt)
@@ -40,7 +49,7 @@ func CachedCart(cache cache.ICache) gin.HandlerFunc {
 }
 func HndlUsrCart(c *gin.Context) {
 	cartVal, ok := c.Get("cachedcart") // middleware wil capture the cart value
-	if ok != true {
+	if !ok {
 		c.AbortWithStatus(http.StatusBadRequest)
 		return
 	}

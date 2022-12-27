@@ -44,7 +44,7 @@ func init() {
 // for seeding json data from file refer to ./seed/carts.json
 func seed_cache(client *redis.Client) {
 	// this is an indicator to load the test data
-	cart := cart.ScanGo{}
+	cart := cart.OnlineCart{}
 	// getting data  from seed json
 	// https://tutorialedge.net/golang/parsing-json-with-golang/
 	/* ++++++++++++++++
